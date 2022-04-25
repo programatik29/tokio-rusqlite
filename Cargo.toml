@@ -1,0 +1,20 @@
+[package]
+name = "tokio-rusqlite"
+version = "0.1.0"
+authors = ["Programatik <programatik29@gmail.com>"]
+edition = "2021"
+description = "Asynchronous handle for rusqlite library."
+documentation = "https://docs.rs/tokio-rusqlite"
+homepage = "https://github.com/programatik29/tokio-rusqlite"
+repository = "https://github.com/programatik29/tokio-rusqlite"
+license = "MIT"
+keywords = ["async", "rusqlite", "sqlite"]
+categories = ["asynchronous", "database"]
+
+[dependencies]
+rusqlite = "0.27"
+tokio = { version = "1", features = ["sync"] }
+
+[dev-dependencies]
+rusqlite = { version = "0.27", features = ["bundled"] }
+tokio = { version = "1", features = ["full"] }
