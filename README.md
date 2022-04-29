@@ -1,3 +1,7 @@
+[![License](https://img.shields.io/crates/l/tokio-rusqlite)](https://choosealicense.com/licenses/mit/)
+[![Crates.io](https://img.shields.io/crates/v/tokio-rusqlite)](https://crates.io/crates/tokio-rusqlite)
+[![Docs - Stable](https://img.shields.io/crates/v/tokio-rusqlite?color=blue&label=docs)](https://docs.rs/tokio-rusqlite/)
+
 # tokio-rusqlite
 
 Asynchronous handle for rusqlite library.
