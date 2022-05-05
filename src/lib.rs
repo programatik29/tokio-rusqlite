@@ -96,11 +96,11 @@
     unreachable_pub
 )]
 
+use crossbeam_channel::Sender;
 use rusqlite::OpenFlags;
 use std::{
     fmt::{self, Debug},
     path::Path,
-    sync::mpsc::{self, SyncSender},
 };
 use tokio::sync::oneshot;
 
@@ -111,7 +111,7 @@ type CallFn = Box<dyn FnOnce(&mut rusqlite::Connection) + Send + 'static>;
 /// A handle to call functions in background thread.
 #[derive(Clone)]
 pub struct Connection {
-    sender: SyncSender<CallFn>,
+    sender: Sender<CallFn>,
 }
 
 impl Connection {
@@ -239,7 +239,7 @@ async fn start<F>(open: F) -> rusqlite::Result<Connection>
 where
     F: FnOnce() -> rusqlite::Result<rusqlite::Connection> + Send + 'static,
 {
-    let (sender, receiver) = mpsc::sync_channel::<CallFn>(1000);
+    let (sender, receiver) = crossbeam_channel::unbounded::<CallFn>();
     let (result_sender, result_receiver) = oneshot::channel();
 
     std::thread::spawn(move || {
