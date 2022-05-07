@@ -101,6 +101,7 @@ use rusqlite::OpenFlags;
 use std::{
     fmt::{self, Debug},
     path::Path,
+    thread,
 };
 use tokio::sync::oneshot;
 
@@ -218,10 +219,7 @@ impl Connection {
         self.sender
             .send(Box::new(move |conn| {
                 let value = function(conn);
-                sender
-                    .send(value)
-                    .map_err(|_| "oneshot send")
-                    .expect(BUG_TEXT);
+                let _ = sender.send(value);
             }))
             .expect(BUG_TEXT);
 
@@ -242,16 +240,18 @@ where
     let (sender, receiver) = crossbeam_channel::unbounded::<CallFn>();
     let (result_sender, result_receiver) = oneshot::channel();
 
-    std::thread::spawn(move || {
+    thread::spawn(move || {
         let mut conn = match open() {
             Ok(c) => c,
             Err(e) => {
-                result_sender.send(Err(e)).expect(BUG_TEXT);
+                let _ = result_sender.send(Err(e));
                 return;
             }
         };
 
-        result_sender.send(Ok(())).expect(BUG_TEXT);
+        if let Err(_e) = result_sender.send(Ok(())) {
+            return;
+        }
 
         while let Ok(f) = receiver.recv() {
             f(&mut conn);
