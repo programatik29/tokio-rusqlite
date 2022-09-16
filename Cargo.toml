@@ -1,6 +1,6 @@
 [package]
 name = "tokio-rusqlite"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Programatik <programatik29@gmail.com>"]
 edition = "2021"
 description = "Asynchronous handle for rusqlite library."
