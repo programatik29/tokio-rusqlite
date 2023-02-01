@@ -11,6 +11,9 @@ license = "MIT"
 keywords = ["async", "rusqlite", "sqlite"]
 categories = ["asynchronous", "database"]
 
+[features]
+bundled = ["rusqlite/bundled"]
+
 [dependencies]
 crossbeam-channel = "0.5"
 rusqlite = "0.28"
