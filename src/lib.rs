@@ -109,10 +109,15 @@ const BUG_TEXT: &str = "bug in tokio-rusqlite, please report";
 
 type CallFn = Box<dyn FnOnce(&mut rusqlite::Connection) + Send + 'static>;
 
+enum Message {
+    Execute(CallFn),
+    Close(oneshot::Sender<Result<(), rusqlite::Error>>),
+}
+
 /// A handle to call functions in background thread.
 #[derive(Clone)]
 pub struct Connection {
-    sender: Sender<CallFn>,
+    sender: Sender<Message>,
 }
 
 impl Connection {
@@ -217,13 +222,30 @@ impl Connection {
         let (sender, receiver) = oneshot::channel::<R>();
 
         self.sender
-            .send(Box::new(move |conn| {
+            .send(Message::Execute(Box::new(move |conn| {
                 let value = function(conn);
                 let _ = sender.send(value);
-            }))
+            })))
             .expect(BUG_TEXT);
 
         receiver.await.expect(BUG_TEXT)
+    }
+
+    /// Close the database connection.
+    ///
+    /// This is functionally equivalent to the `Drop` implementation for
+    /// `Connection`. It consumes the `Connection`, but on error returns it
+    /// to the caller for retry purposes.
+    ///
+    /// # Failure
+    ///
+    /// Will return `Err` if the underlying SQLite close call fails.
+    pub async fn close(self) -> Result<(), (Self, rusqlite::Error)> {
+        let (sender, receiver) = oneshot::channel::<Result<(), rusqlite::Error>>();
+
+        self.sender.send(Message::Close(sender)).expect(BUG_TEXT);
+
+        receiver.await.expect(BUG_TEXT).map_err(|e| (self, e))
     }
 }
 
@@ -237,7 +259,7 @@ async fn start<F>(open: F) -> rusqlite::Result<Connection>
 where
     F: FnOnce() -> rusqlite::Result<rusqlite::Connection> + Send + 'static,
 {
-    let (sender, receiver) = crossbeam_channel::unbounded::<CallFn>();
+    let (sender, receiver) = crossbeam_channel::unbounded::<Message>();
     let (result_sender, result_receiver) = oneshot::channel();
 
     thread::spawn(move || {
@@ -253,8 +275,24 @@ where
             return;
         }
 
-        while let Ok(f) = receiver.recv() {
-            f(&mut conn);
+        while let Ok(message) = receiver.recv() {
+            match message {
+                Message::Execute(f) => f(&mut conn),
+                Message::Close(s) => {
+                    let result = conn.close();
+
+                    match result {
+                        Ok(v) => {
+                            s.send(Ok(v)).expect(BUG_TEXT);
+                            break;
+                        }
+                        Err((c, e)) => {
+                            conn = c;
+                            s.send(Err(e)).expect(BUG_TEXT);
+                        }
+                    }
+                }
+            }
         }
     });
 
