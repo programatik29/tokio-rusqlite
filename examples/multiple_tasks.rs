@@ -58,6 +58,7 @@ async fn main() -> Result<()> {
         println!("Found person {:?}", person);
     }
 
+    conn.close().await.map_err(|e| e.1)?;
     Ok(())
 }
 
