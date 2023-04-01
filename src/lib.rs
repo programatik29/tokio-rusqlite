@@ -96,6 +96,9 @@
     unreachable_pub
 )]
 
+#[cfg(test)]
+mod tests;
+
 use crossbeam_channel::Sender;
 use rusqlite::OpenFlags;
 use std::{
@@ -226,7 +229,7 @@ impl Connection {
                 let value = function(conn);
                 let _ = sender.send(value);
             })))
-            .expect(BUG_TEXT);
+            .expect("database connection should be open");
 
         receiver.await.expect(BUG_TEXT)
     }
@@ -237,13 +240,22 @@ impl Connection {
     /// `Connection`. It consumes the `Connection`, but on error returns it
     /// to the caller for retry purposes.
     ///
+    /// If successful, any following `close` operations performed
+    /// on `Connection` copies will succeed immediately.
+    /// 
+    /// On the other hand, any calls to [`Connection::call`] will `panic`.
+    ///
     /// # Failure
     ///
     /// Will return `Err` if the underlying SQLite close call fails.
     pub async fn close(self) -> Result<(), (Self, rusqlite::Error)> {
         let (sender, receiver) = oneshot::channel::<Result<(), rusqlite::Error>>();
 
-        self.sender.send(Message::Close(sender)).expect(BUG_TEXT);
+        if let Err(crossbeam_channel::SendError(_)) = self.sender.send(Message::Close(sender)) {
+            // If the channel is closed on the other side, it means the connection closed successfully
+            // This is a safeguard against calling close on a `Copy` of the connection
+            return Ok(());
+        }
 
         receiver.await.expect(BUG_TEXT).map_err(|e| (self, e))
     }
