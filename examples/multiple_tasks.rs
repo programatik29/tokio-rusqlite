@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
-use rusqlite::{params, Result};
+use rusqlite::params;
 use tokio::task::JoinHandle;
-use tokio_rusqlite::Connection;
+use tokio_rusqlite::{Connection, Result};
 
 #[derive(Debug)]
 struct Person {
@@ -48,7 +48,7 @@ async fn main() -> Result<()> {
                         data: row.get(2)?,
                     })
                 })?
-                .collect::<Result<Vec<Person>, rusqlite::Error>>()?;
+                .collect::<std::result::Result<Vec<Person>, rusqlite::Error>>()?;
 
             Ok::<_, rusqlite::Error>(people)
         })
@@ -58,7 +58,7 @@ async fn main() -> Result<()> {
         println!("Found person {:?}", person);
     }
 
-    conn.close().await.map_err(|e| e.1)?;
+    conn.close().await?;
     Ok(())
 }
 
