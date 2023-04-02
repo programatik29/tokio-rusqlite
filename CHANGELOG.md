@@ -6,7 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 # Unreleased
 
-None.
+- **added:** Added `Connection::close` method.
+- **added:** Added `tokio_rusqlite::Error` type.
+- **breaking:** All `Connection` methods now return `Result<_, tokio_rusqlite::Error>`.
+- **updated:** To latest [rusqlite] version(`0.29`).
 
 # 0.3.0 (16. Sep 2022)
 
