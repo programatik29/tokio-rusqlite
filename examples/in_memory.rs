@@ -47,12 +47,12 @@ async fn main() -> Result<()> {
                 })?
                 .collect::<std::result::Result<Vec<Person>, rusqlite::Error>>()?;
 
-            Ok::<_, rusqlite::Error>(people)
+            Ok(people)
         })
         .await?;
 
     for person in people {
-        println!("Found person {:?}", person);
+        println!("Found person {person:?}");
     }
 
     conn.close().await?;

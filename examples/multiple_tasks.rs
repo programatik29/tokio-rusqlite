@@ -25,6 +25,7 @@ async fn main() -> Result<()> {
             )",
             [],
         )
+        .map_err(|e| e.into())
     })
     .await?;
 
@@ -50,12 +51,12 @@ async fn main() -> Result<()> {
                 })?
                 .collect::<std::result::Result<Vec<Person>, rusqlite::Error>>()?;
 
-            Ok::<_, rusqlite::Error>(people)
+            Ok(people)
         })
         .await?;
 
     for person in people {
-        println!("Found person {:?}", person);
+        println!("Found person {person:?}");
     }
 
     conn.close().await?;
@@ -75,6 +76,7 @@ fn add_steven_task(conn: Connection) -> JoinHandle<()> {
                 "INSERT INTO person (name, data) VALUES (?1, ?2)",
                 params![steven.name, steven.data],
             )
+            .map_err(|e| e.into())
         })
         .await
         .unwrap();
@@ -94,6 +96,7 @@ fn add_bob_task(conn: Connection) -> JoinHandle<()> {
                 "INSERT INTO person (name, data) VALUES (?1, ?2)",
                 params![bob.name, bob.data],
             )
+            .map_err(|e| e.into())
         })
         .await
         .unwrap();
