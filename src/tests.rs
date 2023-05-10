@@ -28,6 +28,24 @@ async fn call_success_test() -> Result<()> {
 }
 
 #[tokio::test]
+async fn call_unwrap_success_test() -> Result<()> {
+    let conn = Connection::open_in_memory().await?;
+
+    let result = conn
+        .call_unwrap(|conn| {
+            conn.execute(
+                "CREATE TABLE person(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);",
+                [],
+            ).unwrap()
+        })
+        .await;
+
+    assert_eq!(0, result);
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn call_failure_test() -> Result<()> {
     let conn = Connection::open_in_memory().await?;
 
@@ -91,6 +109,18 @@ async fn close_call_test() -> Result<()> {
 }
 
 #[tokio::test]
+#[should_panic]
+async fn close_call_unwrap_test() {
+    let conn = Connection::open_in_memory().await.unwrap();
+
+    let conn2 = conn.clone();
+
+    assert!(conn.close().await.is_ok());
+
+    conn2.call_unwrap(|conn| conn.execute("SELECT 1;", [])).await.unwrap();
+}
+
+#[tokio::test]
 async fn close_failure_test() -> Result<()> {
     let conn = Connection::open_in_memory().await?;
 
@@ -134,7 +164,7 @@ async fn close_failure_test() -> Result<()> {
 async fn debug_format_test() -> Result<()> {
     let conn = Connection::open_in_memory().await?;
 
-    assert_eq!("Connection".to_string(), format!("{:?}", conn));
+    assert_eq!("Connection".to_string(), format!("{conn:?}"));
 
     Ok(())
 }
@@ -146,14 +176,14 @@ async fn test_error_display() -> Result<()> {
     let error = crate::Error::Close((conn, rusqlite::Error::InvalidQuery));
     assert_eq!(
         "Close((Connection, \"Query is not read-only\"))",
-        format!("{}", error)
+        format!("{error}")
     );
 
     let error = crate::Error::ConnectionClosed;
-    assert_eq!("ConnectionClosed", format!("{}", error));
+    assert_eq!("ConnectionClosed", format!("{error}"));
 
     let error = crate::Error::Rusqlite(rusqlite::Error::InvalidQuery);
-    assert_eq!("Rusqlite(\"Query is not read-only\")", format!("{}", error));
+    assert_eq!("Rusqlite(\"Query is not read-only\")", format!("{error}"));
 
     Ok(())
 }
