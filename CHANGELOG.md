@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 # Unreleased
 
-None.
+- **breaking:** `Connection::call` now takes `tokio_rusqlite::Result` instead
+  of `rusqlite::Result`.
+- **added:** Added `Error::Other` variant for application
+  specific errors.
+- **added:** Added `Connection::call_unwrap` method.
 
 # 0.4.0 (3. April 2023)
 
