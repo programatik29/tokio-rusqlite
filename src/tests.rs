@@ -1,6 +1,8 @@
+use std::fmt::Display;
+
 use rusqlite::{ffi, ErrorCode};
 
-use crate::{Connection, Result};
+use crate::{Connection, Error, Result};
 
 #[tokio::test]
 async fn open_in_memory_test() -> Result<()> {
@@ -19,6 +21,7 @@ async fn call_success_test() -> Result<()> {
                 "CREATE TABLE person(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);",
                 [],
             )
+            .map_err(|e| e.into())
         })
         .await;
 
@@ -31,7 +34,9 @@ async fn call_success_test() -> Result<()> {
 async fn call_failure_test() -> Result<()> {
     let conn = Connection::open_in_memory().await?;
 
-    let result = conn.call(|conn| conn.execute("Invalid sql", [])).await;
+    let result = conn
+        .call(|conn| conn.execute("Invalid sql", []).map_err(|e| e.into()))
+        .await;
 
     assert!(match result.unwrap_err() {
         crate::Error::Rusqlite(e) => {
@@ -80,7 +85,9 @@ async fn close_call_test() -> Result<()> {
 
     assert!(conn.close().await.is_ok());
 
-    let result = conn2.call(|conn| conn.execute("SELECT 1;", [])).await;
+    let result = conn2
+        .call(|conn| conn.execute("SELECT 1;", []).map_err(|e| e.into()))
+        .await;
 
     assert!(matches!(
         result.unwrap_err(),
@@ -99,6 +106,7 @@ async fn close_failure_test() -> Result<()> {
             "CREATE TABLE person(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);",
             [],
         )
+        .map_err(|e| e.into())
     })
     .await?;
 
@@ -134,7 +142,7 @@ async fn close_failure_test() -> Result<()> {
 async fn debug_format_test() -> Result<()> {
     let conn = Connection::open_in_memory().await?;
 
-    assert_eq!("Connection".to_string(), format!("{:?}", conn));
+    assert_eq!("Connection".to_string(), format!("{conn:?}"));
 
     Ok(())
 }
@@ -146,14 +154,14 @@ async fn test_error_display() -> Result<()> {
     let error = crate::Error::Close((conn, rusqlite::Error::InvalidQuery));
     assert_eq!(
         "Close((Connection, \"Query is not read-only\"))",
-        format!("{}", error)
+        format!("{error}")
     );
 
     let error = crate::Error::ConnectionClosed;
-    assert_eq!("ConnectionClosed", format!("{}", error));
+    assert_eq!("ConnectionClosed", format!("{error}"));
 
     let error = crate::Error::Rusqlite(rusqlite::Error::InvalidQuery);
-    assert_eq!("Rusqlite(\"Query is not read-only\")", format!("{}", error));
+    assert_eq!("Rusqlite(\"Query is not read-only\")", format!("{error}"));
 
     Ok(())
 }
@@ -185,4 +193,44 @@ async fn test_error_source() -> Result<()> {
     );
 
     Ok(())
+}
+
+fn failable_func(_: &rusqlite::Connection) -> std::result::Result<(), MyError> {
+    Err(MyError::MySpecificError)
+}
+
+#[tokio::test]
+async fn test_ergonomic_errors() -> Result<()> {
+    let conn = Connection::open_in_memory().await?;
+
+    let res = conn
+        .call(|conn| failable_func(conn).map_err(|e| Error::Other(Box::new(e))))
+        .await.unwrap_err();
+
+    let err = std::error::Error::source(&res)
+        .and_then(|e| e.downcast_ref::<MyError>())
+        .unwrap();
+
+    assert!(matches!(err, MyError::MySpecificError));
+
+    Ok(())
+}
+
+// The rest is boilerplate, not really that important
+
+#[derive(Debug)]
+enum MyError {
+    MySpecificError,
+}
+
+impl Display for MyError {
+    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Ok(())
+    }
+}
+
+impl std::error::Error for MyError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
 }

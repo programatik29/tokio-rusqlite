@@ -64,7 +64,7 @@
 //!                 })?
 //!                 .collect::<std::result::Result<Vec<Person>, rusqlite::Error>>()?;
 //!
-//!             Ok::<_, rusqlite::Error>(people)
+//!             Ok(people)
 //!         })
 //!         .await?;
 //!
@@ -124,14 +124,18 @@ pub enum Error {
 
     /// A `Rusqlite` error occured.
     Rusqlite(rusqlite::Error),
+
+    /// An application-specific error occured.
+    Other(Box<dyn std::error::Error + Send + Sync + 'static>),
 }
 
 impl Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::ConnectionClosed => write!(f, "ConnectionClosed"),
-            Error::Close(e) => write!(f, "Close((Connection, \"{}\"))", e.1),
-            Error::Rusqlite(e) => write!(f, "Rusqlite(\"{}\")", e),
+            Error::Close((_, e)) => write!(f, "Close((Connection, \"{e}\"))"),
+            Error::Rusqlite(e) => write!(f, "Rusqlite(\"{e}\")"),
+            Error::Other(ref e) => write!(f, "Other(\"{e}\")"),
         }
     }
 }
@@ -142,6 +146,7 @@ impl std::error::Error for Error {
             Error::ConnectionClosed => None,
             Error::Close((_, e)) => Some(e),
             Error::Rusqlite(e) => Some(e),
+            Error::Other(ref e) => Some(&**e),
         }
     }
 }
@@ -274,10 +279,10 @@ impl Connection {
     /// Will return `Err` if the database connection has been closed.
     pub async fn call<F, R>(&self, function: F) -> Result<R>
     where
-        F: FnOnce(&mut rusqlite::Connection) -> rusqlite::Result<R> + 'static + Send,
+        F: FnOnce(&mut rusqlite::Connection) -> Result<R> + 'static + Send,
         R: Send + 'static,
     {
-        let (sender, receiver) = oneshot::channel::<rusqlite::Result<R>>();
+        let (sender, receiver) = oneshot::channel::<Result<R>>();
 
         self.sender
             .send(Message::Execute(Box::new(move |conn| {
@@ -286,10 +291,7 @@ impl Connection {
             })))
             .map_err(|_| Error::ConnectionClosed)?;
 
-        receiver
-            .await
-            .map_err(|_| Error::ConnectionClosed)?
-            .map_err(Error::Rusqlite)
+        receiver.await.map_err(|_| Error::ConnectionClosed)?
     }
 
     /// Close the database connection.
