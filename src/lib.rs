@@ -294,6 +294,31 @@ impl Connection {
         receiver.await.map_err(|_| Error::ConnectionClosed)?
     }
 
+    /// Call a function in background thread and get the result
+    /// asynchronously.
+    ///
+    /// This method can cause a `panic` if the underlying database connection is closed.
+    /// it is a more user-friendly alternative to the [`Connection:call`] method.
+    /// It should be safe if the connection is never explicitly closed (using the [`Connection::close`] call).
+    ///
+    /// Calling [`call_unwrap`] on a closed connection will cause a `panic`.
+    pub async fn call_unwrap<F, R>(&self, function: F) -> R
+    where
+        F: FnOnce(&mut rusqlite::Connection) -> R + Send + 'static,
+        R: Send + 'static,
+    {
+        let (sender, receiver) = oneshot::channel::<R>();
+
+        self.sender
+            .send(Message::Execute(Box::new(move |conn| {
+                let value = function(conn);
+                let _ = sender.send(value);
+            })))
+            .expect("database connection should be open");
+
+        receiver.await.expect(BUG_TEXT)
+    }
+
     /// Close the database connection.
     ///
     /// This is functionally equivalent to the `Drop` implementation for
@@ -303,7 +328,8 @@ impl Connection {
     /// If successful, any following `close` operations performed
     /// on `Connection` copies will succeed immediately.
     ///
-    /// On the other hand, any calls to [`Connection::call`] will return a [`Error::ConnectionClosed`].
+    /// On the other hand, any calls to [`Connection::call`] will return a [`Error::ConnectionClosed`],
+    /// and any calls to [`Connection::call_unwrap`] will cause a `panic`.
     ///
     /// # Failure
     ///

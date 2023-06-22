@@ -31,6 +31,24 @@ async fn call_success_test() -> Result<()> {
 }
 
 #[tokio::test]
+async fn call_unwrap_success_test() -> Result<()> {
+    let conn = Connection::open_in_memory().await?;
+
+    let result = conn
+        .call_unwrap(|conn| {
+            conn.execute(
+                "CREATE TABLE person(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);",
+                [],
+            ).unwrap()
+        })
+        .await;
+
+    assert_eq!(0, result);
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn call_failure_test() -> Result<()> {
     let conn = Connection::open_in_memory().await?;
 
@@ -95,6 +113,18 @@ async fn close_call_test() -> Result<()> {
     ));
 
     Ok(())
+}
+
+#[tokio::test]
+#[should_panic]
+async fn close_call_unwrap_test() {
+    let conn = Connection::open_in_memory().await.unwrap();
+
+    let conn2 = conn.clone();
+
+    assert!(conn.close().await.is_ok());
+
+    conn2.call_unwrap(|conn| conn.execute("SELECT 1;", [])).await.unwrap();
 }
 
 #[tokio::test]
