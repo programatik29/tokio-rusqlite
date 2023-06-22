@@ -298,10 +298,10 @@ impl Connection {
     /// asynchronously.
     ///
     /// This method can cause a `panic` if the underlying database connection is closed.
-    /// it is a more user-friendly alternative to the [`Connection:call`] method.
+    /// it is a more user-friendly alternative to the [`Connection::call`] method.
     /// It should be safe if the connection is never explicitly closed (using the [`Connection::close`] call).
     ///
-    /// Calling [`call_unwrap`] on a closed connection will cause a `panic`.
+    /// Calling this on a closed connection will cause a `panic`.
     pub async fn call_unwrap<F, R>(&self, function: F) -> R
     where
         F: FnOnce(&mut rusqlite::Connection) -> R + Send + 'static,

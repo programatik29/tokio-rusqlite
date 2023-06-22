@@ -39,7 +39,8 @@ async fn call_unwrap_success_test() -> Result<()> {
             conn.execute(
                 "CREATE TABLE person(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL);",
                 [],
-            ).unwrap()
+            )
+            .unwrap()
         })
         .await;
 
@@ -124,7 +125,10 @@ async fn close_call_unwrap_test() {
 
     assert!(conn.close().await.is_ok());
 
-    conn2.call_unwrap(|conn| conn.execute("SELECT 1;", [])).await.unwrap();
+    conn2
+        .call_unwrap(|conn| conn.execute("SELECT 1;", []))
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
@@ -235,7 +239,8 @@ async fn test_ergonomic_errors() -> Result<()> {
 
     let res = conn
         .call(|conn| failable_func(conn).map_err(|e| Error::Other(Box::new(e))))
-        .await.unwrap_err();
+        .await
+        .unwrap_err();
 
     let err = std::error::Error::source(&res)
         .and_then(|e| e.downcast_ref::<MyError>())
