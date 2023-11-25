@@ -108,6 +108,8 @@ use std::{
 };
 use tokio::sync::oneshot::{self};
 
+pub use rusqlite::params;
+
 const BUG_TEXT: &str = "bug in tokio-rusqlite, please report";
 
 #[derive(Debug)]
