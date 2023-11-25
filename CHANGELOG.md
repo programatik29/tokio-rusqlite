@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 # Unreleased
 
+- **updated:** To latest [rusqlite] version (`0.30`).
 - **added:** Added `params` macro export from `rusqlite` crate.
 - **breaking:** `Connection::call` now takes `tokio_rusqlite::Result` instead
   of `rusqlite::Result`.
@@ -18,11 +19,11 @@ The format is based on [Keep a Changelog], and this project adheres to
 - **added:** Added `Connection::close` method.
 - **added:** Added `tokio_rusqlite::Error` type.
 - **breaking:** All `Connection` methods now return `Result<_, tokio_rusqlite::Error>`.
-- **updated:** To latest [rusqlite] version(`0.29`).
+- **updated:** To latest [rusqlite] version (`0.29`).
 
 # 0.3.0 (16. Sep 2022)
 
-- **updated:** To latest [rusqlite] version(`0.28`).
+- **updated:** To latest [rusqlite] version (`0.28`).
 
 # 0.2.0 (13. July 2022)
 
