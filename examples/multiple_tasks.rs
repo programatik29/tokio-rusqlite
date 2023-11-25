@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use tokio::task::JoinHandle;
-use tokio_rusqlite::{Connection, Result, params};
+use tokio_rusqlite::{params, Connection, Result};
 
 #[derive(Debug)]
 struct Person {
