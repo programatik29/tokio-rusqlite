@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 # Unreleased
 
+- **added:** Added `params` macro export from `rusqlite` crate.
 - **breaking:** `Connection::call` now takes `tokio_rusqlite::Result` instead
   of `rusqlite::Result`.
 - **added:** Added `Error::Other` variant for application
