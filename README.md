@@ -9,8 +9,7 @@ Asynchronous handle for rusqlite library.
 # Usage
 
 ```rust
-use rusqlite::{params, Result};
-use tokio_rusqlite::Connection;
+use tokio_rusqlite::{params, Connection, Result};
 
 #[derive(Debug)]
 struct Person {
@@ -34,11 +33,12 @@ async fn main() -> Result<()> {
                 [],
             )?;
 
-            let steven = Person {
-                id: 1,
-                name: "Steven".to_string(),
-                data: None,
-            };
+            let steven =
+                Person {
+                    id: 1,
+                    name: "Steven".to_string(),
+                    data: None,
+                };
 
             conn.execute(
                 "INSERT INTO person (name, data) VALUES (?1, ?2)",
@@ -54,16 +54,17 @@ async fn main() -> Result<()> {
                         data: row.get(2)?,
                     })
                 })?
-                .collect::<Result<Vec<Person>, rusqlite::Error>>()?;
+                .collect::<std::result::Result<Vec<Person>, rusqlite::Error>>()?;
 
-            Ok::<_, rusqlite::Error>(people)
+            Ok(people)
         })
         .await?;
 
     for person in people {
-        println!("Found person {:?}", person);
+        println!("Found person {person:?}");
     }
 
+    conn.close().await?;
     Ok(())
 }
 ```
