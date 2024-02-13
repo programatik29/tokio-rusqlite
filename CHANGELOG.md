@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to
 [Semantic Versioning].
 
+# 0.5.1 (13 Feb 2024)
+
+- **added**: Reexported all names from `rusqlite` crate.
+
 # 0.5.0 (25 Nov 2023)
 
 - **updated:** To latest [rusqlite] version (`0.30`).
