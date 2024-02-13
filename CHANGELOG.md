@@ -4,10 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to
 [Semantic Versioning].
 
+# 0.5.1 (13 Feb 2024)
+
+- **added:** All names from the `rusqlite` crate.
+
 # 0.5.0 (25 Nov 2023)
 
 - **updated:** To latest [rusqlite] version (`0.30`).
-- **added:** Added `params` macro export from `rusqlite` crate.
+- **added:** `params` macro from `rusqlite` crate.
 - **breaking:** `Connection::call` now takes `tokio_rusqlite::Result` instead
   of `rusqlite::Result`.
 - **added:** Added `Error::Other` variant for application
