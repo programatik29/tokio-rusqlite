@@ -1,8 +1,6 @@
 use std::fmt::Display;
 
-use rusqlite::{ffi, ErrorCode};
-
-use crate::{Connection, Error, Result};
+use crate::*;
 
 #[tokio::test]
 async fn open_in_memory_test() -> Result<()> {
