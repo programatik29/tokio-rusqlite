@@ -115,8 +115,3 @@ jobs:
         with:
           command: tarpaulin
           args: --verbose --all-features --run-types AllTargets --workspace --timeout 120 --out Lcov
-      - name: Upload coverage to Coveralls
-        uses: coverallsapp/github-action@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: lcov.info
