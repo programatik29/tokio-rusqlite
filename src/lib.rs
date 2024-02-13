@@ -17,8 +17,7 @@
 //! # Example
 //!
 //! ```rust,no_run
-//! use rusqlite::params;
-//! use tokio_rusqlite::{Connection, Result};
+//! use tokio_rusqlite::{params, Connection, Result};
 //!
 //! #[derive(Debug)]
 //! struct Person {
@@ -100,7 +99,6 @@
 mod tests;
 
 use crossbeam_channel::Sender;
-use rusqlite::OpenFlags;
 use std::{
     fmt::{self, Debug, Display},
     path::Path,
@@ -108,7 +106,7 @@ use std::{
 };
 use tokio::sync::oneshot::{self};
 
-pub use rusqlite::params;
+pub use rusqlite::*;
 
 const BUG_TEXT: &str = "bug in tokio-rusqlite, please report";
 
