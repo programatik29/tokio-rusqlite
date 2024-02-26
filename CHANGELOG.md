@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 # 0.5.1 (13 Feb 2024)
 
+- **updated:** To latest [rusqlite] version (`0.31`).
 - **added**: Reexported all names from `rusqlite` crate.
 
 # 0.5.0 (25 Nov 2023)
