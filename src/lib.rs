@@ -174,11 +174,6 @@ pub struct Connection {
 }
 
 impl Connection {
-    /// Convert an existing `rusqlite::Connection` into a `Connection`.
-    pub async fn from(conn: rusqlite::Connection) -> Self {
-        start(move || Ok(conn)).await.expect(BUG_TEXT)
-    }
-
     /// Open a new connection to a SQLite database.
     ///
     /// `Connection::open(path)` is equivalent to
