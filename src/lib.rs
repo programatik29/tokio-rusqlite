@@ -98,7 +98,7 @@
 #[cfg(test)]
 mod tests;
 
-use crossbeam_channel::Sender;
+use crossbeam_channel::{Receiver, Sender};
 use std::{
     fmt::{self, Debug, Display},
     path::Path,
@@ -366,6 +366,15 @@ impl Debug for Connection {
     }
 }
 
+impl From<rusqlite::Connection> for Connection {
+    fn from(conn: rusqlite::Connection) -> Self {
+        let (sender, receiver) = crossbeam_channel::unbounded::<Message>();
+        thread::spawn(move || event_loop(conn, receiver));
+
+        Self { sender }
+    }
+}
+
 async fn start<F>(open: F) -> rusqlite::Result<Connection>
 where
     F: FnOnce() -> rusqlite::Result<rusqlite::Connection> + Send + 'static,
@@ -374,7 +383,7 @@ where
     let (result_sender, result_receiver) = oneshot::channel();
 
     thread::spawn(move || {
-        let mut conn = match open() {
+        let conn = match open() {
             Ok(c) => c,
             Err(e) => {
                 let _ = result_sender.send(Err(e));
@@ -386,29 +395,33 @@ where
             return;
         }
 
-        while let Ok(message) = receiver.recv() {
-            match message {
-                Message::Execute(f) => f(&mut conn),
-                Message::Close(s) => {
-                    let result = conn.close();
-
-                    match result {
-                        Ok(v) => {
-                            s.send(Ok(v)).expect(BUG_TEXT);
-                            break;
-                        }
-                        Err((c, e)) => {
-                            conn = c;
-                            s.send(Err(e)).expect(BUG_TEXT);
-                        }
-                    }
-                }
-            }
-        }
+        event_loop(conn, receiver);
     });
 
     result_receiver
         .await
         .expect(BUG_TEXT)
         .map(|_| Connection { sender })
+}
+
+fn event_loop(mut conn: rusqlite::Connection, receiver: Receiver<Message>) {
+    while let Ok(message) = receiver.recv() {
+        match message {
+            Message::Execute(f) => f(&mut conn),
+            Message::Close(s) => {
+                let result = conn.close();
+
+                match result {
+                    Ok(v) => {
+                        s.send(Ok(v)).expect(BUG_TEXT);
+                        break;
+                    }
+                    Err((c, e)) => {
+                        conn = c;
+                        s.send(Err(e)).expect(BUG_TEXT);
+                    }
+                }
+            }
+        }
+    }
 }
