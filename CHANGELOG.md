@@ -6,9 +6,14 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 # Unreleased
 
+Nothing.
+
+# 0.6.0 (20 Sep 2024)
+
 - **updated**: [rusqlite] version to `0.32`.
 - **added**: `bundled` feature corresponding to `rusqlite/bundled` feature.
 - **added**: Implement `From<rusqlite::Connection>` for `Connection`.
+- **removed**: async `Connection::from` implementation instead added above.
 
 # 0.5.1 (13 Feb 2024)
 
