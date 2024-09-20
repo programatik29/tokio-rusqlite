@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to
 [Semantic Versioning].
 
+# Unreleased
+
+- **updated**: [rusqlite] version to `0.32`.
+- **added**: `bundled` feature corresponding to `rusqlite/bundled` feature.
+- **added**: Implement `From<rusqlite::Connection>` for `Connection`.
+
 # 0.5.1 (13 Feb 2024)
 
 - **updated:** To latest [rusqlite] version (`0.31`).
