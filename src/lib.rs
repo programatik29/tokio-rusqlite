@@ -106,8 +106,8 @@ use std::{
 };
 use tokio::sync::oneshot::{self};
 
-pub use rusqlite::*;
 pub use rusqlite;
+pub use rusqlite::*;
 
 const BUG_TEXT: &str = "bug in tokio-rusqlite, please report";
 
