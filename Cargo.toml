@@ -12,7 +12,58 @@ keywords = ["async", "rusqlite", "sqlite"]
 categories = ["asynchronous", "database"]
 
 [features]
+array = ["vtab", "rusqlite/vtab"]
+backup = ["rusqlite/backup"]
+blob = ["rusqlite/blob"]
+buildtime_bindgen = ["rusqlite/buildtime_bindgen"]
 bundled = ["rusqlite/bundled"]
+bundled-full = ["rusqlite/modern-full", "rusqlite/bundled", "bundled"]
+bundled-sqlcipher = ["rusqlite/bundled-sqlcipher", "rusqlite/bundled", "bundled"]
+bundled-sqlcipher-vendored-openssl = [
+    "rusqlite/bundled-sqlcipher-vendored-openssl",
+    "bundled-sqlcipher",
+    "rusqlite/bundled-sqlcipher",
+]
+bundled-windows = ["rusqlite/bundled-windows"]
+chrono = ["rusqlite/chrono"]
+# byteorder = ["rusqlite/byteorder"] rusqlite-le
+collation = ["rusqlite/collation"]
+column_decltype = ["rusqlite/column_decltype"]
+csv = ["rusqlite/csv"]
+csvtab = ["csv", "rusqlite/csv", "vtab"]
+extra_check = ["rusqlite/extra_check"]
+functions = ["rusqlite/functions"]
+hooks = ["rusqlite/hooks"]
+i128_blob = ["rusqlite/i128_blob"]
+in_gecko = ["modern_sqlite", "rusqlite/in_gecko", "rusqlite/modern_sqlite"]
+# lazy_static = ["rusqlite/lazy_static"] rusqlite-le
+limits = ["rusqlite/limits"]
+load_extension = ["rusqlite/load_extension"]
+loadable_extension = ["rusqlite/loadable_extension"]
+# loadable_extension_embedded = ["rusqlite/loadable_extension_embedded"] rusqlite-le
+modern-full = [ "rusqlite/modern-full" ]
+modern_sqlite = ["rusqlite/modern_sqlite"]
+preupdate_hook = ["rusqlite/preupdate_hook", "hooks"]
+release_memory = ["rusqlite/release_memory"]
+rusqlite-macros = ["rusqlite/rusqlite-macros"]
+serde_json = ["rusqlite/serde_json"]
+serialize = ["modern_sqlite"]
+series = ["vtab", "rusqlite/vtab"]
+session = ["rusqlite/session", "hooks"]
+sqlcipher = ["rusqlite/sqlcipher"]
+time = ["rusqlite/time"]
+trace = ["rusqlite/trace"]
+unlock_notify = ["rusqlite/unlock_notify"]
+url = ["rusqlite/url"]
+uuid = ["rusqlite/uuid"]
+vtab = ["rusqlite/vtab"]
+wasm32-wasi-vfs = ["rusqlite/wasm32-wasi-vfs"]
+window = ["rusqlite/functions"]
+# winsqlite3 = ["rusqlite/winsqlite3"] rusqlite-le
+with-asan = ["rusqlite/with-asan"]
+
+# In Cargo.toml but not in docs.rs
+
 
 [dependencies]
 crossbeam-channel = "0.5"
