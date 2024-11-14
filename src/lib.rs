@@ -113,7 +113,7 @@ const BUG_TEXT: &str = "bug in tokio-rusqlite, please report";
 #[derive(Debug)]
 /// Represents the errors specific for this library.
 #[non_exhaustive]
-pub enum Error {
+pub enum Error<E = rusqlite::Error> {
     /// The connection to the SQLite has been closed and cannot be queried any more.
     ConnectionClosed,
 
@@ -122,38 +122,33 @@ pub enum Error {
     /// and the underlying [`rusqlite::Error`] that made it impossile to close the database.
     Close((Connection, rusqlite::Error)),
 
-    /// A `Rusqlite` error occured.
-    Rusqlite(rusqlite::Error),
-
     /// An application-specific error occured.
-    Other(Box<dyn std::error::Error + Send + Sync + 'static>),
+    Error(E),
 }
 
-impl Display for Error {
+impl<E: Display> Display for Error<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::ConnectionClosed => write!(f, "ConnectionClosed"),
             Error::Close((_, e)) => write!(f, "Close((Connection, \"{e}\"))"),
-            Error::Rusqlite(e) => write!(f, "Rusqlite(\"{e}\")"),
-            Error::Other(ref e) => write!(f, "Other(\"{e}\")"),
+            Error::Error(e) => write!(f, "Error(\"{e}\")"),
         }
     }
 }
 
-impl std::error::Error for Error {
+impl<E: std::error::Error + 'static> std::error::Error for Error<E> {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Error::ConnectionClosed => None,
             Error::Close((_, e)) => Some(e),
-            Error::Rusqlite(e) => Some(e),
-            Error::Other(ref e) => Some(&**e),
+            Error::Error(e) => Some(e),
         }
     }
 }
 
 impl From<rusqlite::Error> for Error {
     fn from(value: rusqlite::Error) -> Self {
-        Error::Rusqlite(value)
+        Error::Error(value)
     }
 }
 
@@ -184,11 +179,9 @@ impl Connection {
     ///
     /// Will return `Err` if `path` cannot be converted to a C-compatible
     /// string or if the underlying SQLite open call fails.
-    pub async fn open<P: AsRef<Path>>(path: P) -> Result<Self> {
+    pub async fn open<P: AsRef<Path>>(path: P) -> std::result::Result<Self, rusqlite::Error> {
         let path = path.as_ref().to_owned();
-        start(move || rusqlite::Connection::open(path))
-            .await
-            .map_err(Error::Rusqlite)
+        start(move || rusqlite::Connection::open(path)).await
     }
 
     /// Open a new connection to an in-memory SQLite database.
@@ -196,10 +189,8 @@ impl Connection {
     /// # Failure
     ///
     /// Will return `Err` if the underlying SQLite open call fails.
-    pub async fn open_in_memory() -> Result<Self> {
-        start(rusqlite::Connection::open_in_memory)
-            .await
-            .map_err(Error::Rusqlite)
+    pub async fn open_in_memory() -> std::result::Result<Self, rusqlite::Error> {
+        start(rusqlite::Connection::open_in_memory).await
     }
 
     /// Open a new connection to a SQLite database.
@@ -211,11 +202,12 @@ impl Connection {
     ///
     /// Will return `Err` if `path` cannot be converted to a C-compatible
     /// string or if the underlying SQLite open call fails.
-    pub async fn open_with_flags<P: AsRef<Path>>(path: P, flags: OpenFlags) -> Result<Self> {
+    pub async fn open_with_flags<P: AsRef<Path>>(
+        path: P,
+        flags: OpenFlags,
+    ) -> std::result::Result<Self, rusqlite::Error> {
         let path = path.as_ref().to_owned();
-        start(move || rusqlite::Connection::open_with_flags(path, flags))
-            .await
-            .map_err(Error::Rusqlite)
+        start(move || rusqlite::Connection::open_with_flags(path, flags)).await
     }
 
     /// Open a new connection to a SQLite database using the specific flags
@@ -232,12 +224,10 @@ impl Connection {
         path: P,
         flags: OpenFlags,
         vfs: &str,
-    ) -> Result<Self> {
+    ) -> std::result::Result<Self, rusqlite::Error> {
         let path = path.as_ref().to_owned();
         let vfs = vfs.to_owned();
-        start(move || rusqlite::Connection::open_with_flags_and_vfs(path, flags, &vfs))
-            .await
-            .map_err(Error::Rusqlite)
+        start(move || rusqlite::Connection::open_with_flags_and_vfs(path, flags, &vfs)).await
     }
 
     /// Open a new connection to an in-memory SQLite database.
@@ -248,10 +238,10 @@ impl Connection {
     /// # Failure
     ///
     /// Will return `Err` if the underlying SQLite open call fails.
-    pub async fn open_in_memory_with_flags(flags: OpenFlags) -> Result<Self> {
-        start(move || rusqlite::Connection::open_in_memory_with_flags(flags))
-            .await
-            .map_err(Error::Rusqlite)
+    pub async fn open_in_memory_with_flags(
+        flags: OpenFlags,
+    ) -> std::result::Result<Self, rusqlite::Error> {
+        start(move || rusqlite::Connection::open_in_memory_with_flags(flags)).await
     }
 
     /// Open a new connection to an in-memory SQLite database using the
@@ -264,11 +254,12 @@ impl Connection {
     ///
     /// Will return `Err` if `vfs` cannot be converted to a C-compatible
     /// string or if the underlying SQLite open call fails.
-    pub async fn open_in_memory_with_flags_and_vfs(flags: OpenFlags, vfs: &str) -> Result<Self> {
+    pub async fn open_in_memory_with_flags_and_vfs(
+        flags: OpenFlags,
+        vfs: &str,
+    ) -> std::result::Result<Self, rusqlite::Error> {
         let vfs = vfs.to_owned();
-        start(move || rusqlite::Connection::open_in_memory_with_flags_and_vfs(flags, &vfs))
-            .await
-            .map_err(Error::Rusqlite)
+        start(move || rusqlite::Connection::open_in_memory_with_flags_and_vfs(flags, &vfs)).await
     }
 
     /// Call a function in background thread and get the result
@@ -277,12 +268,31 @@ impl Connection {
     /// # Failure
     ///
     /// Will return `Err` if the database connection has been closed.
-    pub async fn call<F, R>(&self, function: F) -> Result<R>
+    /// Will return `Error::Error` wrapping the inner error if `function` failed.
+    pub async fn call<F, R, E>(&self, function: F) -> std::result::Result<R, Error<E>>
     where
-        F: FnOnce(&mut rusqlite::Connection) -> Result<R> + 'static + Send,
+        F: FnOnce(&mut rusqlite::Connection) -> std::result::Result<R, E> + 'static + Send,
+        R: Send + 'static,
+        E: Send + 'static,
+    {
+        self.call_raw(function)
+            .await
+            .map_err(|_| Error::ConnectionClosed)
+            .and_then(|result| result.map_err(Error::Error))
+    }
+
+    /// Call a function in background thread and get the result
+    /// asynchronously.
+    ///
+    /// # Failure
+    ///
+    /// Will return `Err` if the database connection has been closed.
+    pub async fn call_raw<F, R>(&self, function: F) -> Result<R>
+    where
+        F: FnOnce(&mut rusqlite::Connection) -> R + 'static + Send,
         R: Send + 'static,
     {
-        let (sender, receiver) = oneshot::channel::<Result<R>>();
+        let (sender, receiver) = oneshot::channel::<R>();
 
         self.sender
             .send(Message::Execute(Box::new(move |conn| {
@@ -291,7 +301,7 @@ impl Connection {
             })))
             .map_err(|_| Error::ConnectionClosed)?;
 
-        receiver.await.map_err(|_| Error::ConnectionClosed)?
+        receiver.await.map_err(|_| Error::ConnectionClosed)
     }
 
     /// Call a function in background thread and get the result
