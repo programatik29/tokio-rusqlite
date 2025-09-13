@@ -108,6 +108,9 @@ use tokio::sync::oneshot::{self};
 
 pub use rusqlite::*;
 
+/// The error type returned by the underlying `rusqlite` library.
+pub type RusqliteError = rusqlite::Error;
+
 const BUG_TEXT: &str = "bug in tokio-rusqlite, please report";
 
 #[derive(Debug)]
