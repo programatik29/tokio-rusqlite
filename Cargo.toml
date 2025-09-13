@@ -13,6 +13,7 @@ categories = ["asynchronous", "database"]
 
 [features]
 bundled = ["rusqlite/bundled"]
+serde_json = ["rusqlite/serde_json"]
 
 [dependencies]
 crossbeam-channel = "0.5"
