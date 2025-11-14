@@ -106,7 +106,7 @@ use std::{
 };
 use tokio::sync::oneshot::{self};
 
-pub use rusqlite::*;
+pub use rusqlite::{self, *};
 
 const BUG_TEXT: &str = "bug in tokio-rusqlite, please report";
 
@@ -227,7 +227,7 @@ impl Connection {
     ) -> std::result::Result<Self, rusqlite::Error> {
         let path = path.as_ref().to_owned();
         let vfs = vfs.to_owned();
-        start(move || rusqlite::Connection::open_with_flags_and_vfs(path, flags, &vfs)).await
+        start(move || rusqlite::Connection::open_with_flags_and_vfs(path, flags, &*vfs)).await
     }
 
     /// Open a new connection to an in-memory SQLite database.
@@ -259,7 +259,7 @@ impl Connection {
         vfs: &str,
     ) -> std::result::Result<Self, rusqlite::Error> {
         let vfs = vfs.to_owned();
-        start(move || rusqlite::Connection::open_in_memory_with_flags_and_vfs(flags, &vfs)).await
+        start(move || rusqlite::Connection::open_in_memory_with_flags_and_vfs(flags, &*vfs)).await
     }
 
     /// Call a function in background thread and get the result
