@@ -75,7 +75,6 @@ fn add_steven_task(conn: Connection) -> JoinHandle<()> {
                 "INSERT INTO person (name, data) VALUES (?1, ?2)",
                 params![steven.name, steven.data],
             )
-            .map_err(|e| e.into())
         })
         .await
         .unwrap();
@@ -95,7 +94,6 @@ fn add_bob_task(conn: Connection) -> JoinHandle<()> {
                 "INSERT INTO person (name, data) VALUES (?1, ?2)",
                 params![bob.name, bob.data],
             )
-            .map_err(|e| e.into())
         })
         .await
         .unwrap();
