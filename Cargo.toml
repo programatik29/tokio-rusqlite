@@ -1,6 +1,6 @@
 [package]
 name = "tokio-rusqlite"
-version = "0.6.1"
+version = "0.7.0"
 authors = ["Programatik <programatik29@gmail.com>", "Adi Salimgereev <adisalimgereev@gmail.com>"]
 edition = "2021"
 description = "Asynchronous handle for rusqlite library."
@@ -12,7 +12,51 @@ keywords = ["async", "rusqlite", "sqlite"]
 categories = ["asynchronous", "database"]
 
 [features]
+# https://docs.rs/crate/rusqlite/latest/features
+default = []
+
+array = ["rusqlite/array"]
+backup = ["rusqlite/backup"]
+blob = ["rusqlite/blob"]
+buildtime_bindgen = ["rusqlite/buildtime_bindgen"]
 bundled = ["rusqlite/bundled"]
+bundled-full = ["rusqlite/bundled-full"]
+bundled-sqlcipher = ["rusqlite/bundled-sqlcipher"]
+bundled-sqlcipher-vendored-openssl = ["rusqlite/bundled-sqlcipher-vendored-openssl"]
+bundled-windows = ["rusqlite/bundled-windows"]
+chrono = ["rusqlite/chrono"]
+collation = ["rusqlite/collation"]
+column_decltype = ["rusqlite/column_decltype"]
+column_metadata = ["rusqlite/column_metadata"]
+csv = ["rusqlite/csv"]
+csvtab = ["rusqlite/csvtab"]
+extra_check = ["rusqlite/extra_check"]
+functions = ["rusqlite/functions"]
+hooks = ["rusqlite/hooks"]
+i128_blob = ["rusqlite/i128_blob"]
+in_gecko = ["rusqlite/in_gecko"]
+jiff = ["rusqlite/jiff"]
+limits = ["rusqlite/limits"]
+load_extension = ["rusqlite/load_extension"]
+loadable_extension = ["rusqlite/loadable_extension"]
+modern-full = ["rusqlite/modern-full"]
+modern_sqlite = ["rusqlite/modern_sqlite"]
+preupdate_hook = ["rusqlite/preupdate_hook"]
+rusqlite-macros = ["rusqlite/rusqlite-macros"]
+serde_json = ["rusqlite/serde_json"]
+serialize = ["rusqlite/serialize"]
+series = ["rusqlite/series"]
+session = ["rusqlite/session"]
+sqlcipher = ["rusqlite/sqlcipher"]
+time = ["rusqlite/time"]
+trace = ["rusqlite/trace"]
+unlock_notify = ["rusqlite/unlock_notify"]
+url = ["rusqlite/url"]
+uuid = ["rusqlite/uuid"]
+vtab = ["rusqlite/vtab"]
+wasm32-wasi-vfs = ["rusqlite/wasm32-wasi-vfs"]
+window = ["rusqlite/window"]
+with-asan = ["rusqlite/with-asan"]
 
 [dependencies]
 crossbeam-channel = "0.5"
@@ -20,5 +64,5 @@ rusqlite = "0.37.0"
 tokio = { version = "1", features = ["sync"] }
 
 [dev-dependencies]
-rusqlite = { version = "0.37.0", features = ["bundled"] }
+rusqlite = { version = "0.37", features = ["bundled"] }
 tokio = { version = "1", features = ["full"] }

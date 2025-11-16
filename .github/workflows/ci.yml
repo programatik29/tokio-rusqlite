@@ -35,7 +35,7 @@ jobs:
           command: test
 
   test_all_features:
-    name: Test all features
+    name: Test rusqlite modern-full
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -47,7 +47,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --all-features
+          args: --no-default-features --features modern-full
 
   fmt:
     name: Rustfmt
@@ -99,7 +99,7 @@ jobs:
           args: -- -D warnings
 
   coverage:
-    name: Code coverage
+    name: Code coverage (modern-full)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -114,4 +114,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: tarpaulin
-          args: --verbose --all-features --run-types AllTargets --workspace --timeout 120 --out Lcov
+          args: --verbose --no-default-features --features modern-full --run-types AllTargets --workspace --timeout 120 --out Lcov
