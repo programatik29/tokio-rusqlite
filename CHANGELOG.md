@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 # Unreleased
 
-Nothing.
+# 0.7.0 (16 Nov 2025)
+- **added**: all 42 feature flags of rusqlite are now available for configuration.
+  > [rusqlite]'s bundled feature flag is now not a default option, you need to specify it manually.
+
+# 0.6.1 (16 Nov 2025)
+- **updated**: [rusqlite] version to 0.37.
+- **updated**: error handling ergonomics by introducing generic parameter to Error type, eliminating the need for repetitive `.map_err(|e| e.into())` conversions.
 
 # 0.6.0 (20 Sep 2024)
 
