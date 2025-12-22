@@ -60,9 +60,9 @@ with-asan = ["rusqlite/with-asan"]
 
 [dependencies]
 crossbeam-channel = "0.5"
-rusqlite = "0.37.0"
+rusqlite = "0.38.0"
 tokio = { version = "1", features = ["sync"] }
 
 [dev-dependencies]
-rusqlite = { version = "0.37", features = ["bundled"] }
+rusqlite = { version = "0.38", features = ["bundled"] }
 tokio = { version = "1", features = ["full"] }
