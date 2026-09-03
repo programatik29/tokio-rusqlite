@@ -100,14 +100,14 @@ path = "examples/multiple_tasks.rs"
 version = "0.5"
 
 [dependencies.rusqlite]
-version = "0.37.0"
+version = "0.38.0"
 
 [dependencies.tokio]
 version = "1"
 features = ["sync"]
 
 [dev-dependencies.rusqlite]
-version = "0.37"
+version = "0.38"
 features = ["bundled"]
 
 [dev-dependencies.tokio]
