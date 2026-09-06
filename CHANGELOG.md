@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 # Unreleased
 
+# 0.8.0 (6 Sep 2026)
+- **updated**: [rusqlite] version to `0.40.1`.
+- **updated**: Clippy lint name from `empty_enum` to `empty_enums`.
+
 # 0.7.0 (16 Nov 2025)
 - **added**: all 42 feature flags of rusqlite are now available for configuration.
   > [rusqlite]'s bundled feature flag is now not a default option, you need to specify it manually.
