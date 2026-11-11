@@ -1,6 +1,6 @@
 [package]
 name = "tokio-rusqlite"
-version = "0.8.0"
+version = "0.9.0"
 authors = ["Programatik <programatik29@gmail.com>", "Adi Salimgereev <adisalimgereev@gmail.com>"]
 edition = "2021"
 description = "Asynchronous handle for rusqlite library."
@@ -25,6 +25,7 @@ bundled-sqlcipher = ["rusqlite/bundled-sqlcipher"]
 bundled-sqlcipher-vendored-openssl = ["rusqlite/bundled-sqlcipher-vendored-openssl"]
 bundled-windows = ["rusqlite/bundled-windows"]
 chrono = ["rusqlite/chrono"]
+codec = ["rusqlite/codec"]
 collation = ["rusqlite/collation"]
 column_decltype = ["rusqlite/column_decltype"]
 column_metadata = ["rusqlite/column_metadata"]
@@ -54,15 +55,16 @@ unlock_notify = ["rusqlite/unlock_notify"]
 url = ["rusqlite/url"]
 uuid = ["rusqlite/uuid"]
 vtab = ["rusqlite/vtab"]
+wal = ["rusqlite/wal"]
 wasm32-wasi-vfs = ["rusqlite/wasm32-wasi-vfs"]
 window = ["rusqlite/window"]
 with-asan = ["rusqlite/with-asan"]
 
 [dependencies]
 crossbeam-channel = "0.5"
-rusqlite = "0.41.1"
+rusqlite = "0.42.0"
 tokio = { version = "1", features = ["sync"] }
 
 [dev-dependencies]
-rusqlite = { version = "0.41", features = ["bundled"] }
+rusqlite = { version = "0.42", features = ["bundled"] }
 tokio = { version = "1", features = ["full"] }

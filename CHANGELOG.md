@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 # Unreleased
 
+# 0.9.0 (11 Nov 2026)
+- **updated**: [rusqlite] version to `0.42.0` (bundled SQLite `3.54.1`).
+- **added**: `wal` and `codec` feature flags (`codec` requires `sqlcipher` or
+  `bundled-sqlcipher`).
+- **breaking**: [rusqlite] is re-exported, so its API changes apply here.
+  `Statement::columns`, `column_names`, and `columns_with_metadata` now return
+  iterators, `zeroblob` takes a `u64`, and the MSRV is now Rust 1.89.
+
 # 0.8.0 (6 Sep 2026)
 - **updated**: [rusqlite] version to `0.40.1`.
 - **updated**: Clippy lint name from `empty_enum` to `empty_enums`.
