@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 # Unreleased
 
+# 0.10.0 (20 Nov 2026)
+- **updated**: [rusqlite] version to `0.43.0` (bundled SQLite `3.54.1`).
+- **breaking**: [rusqlite] is re-exported, so its API changes apply here.
+  `prepare`, `prepare_cached`, and `execute` now reject empty or comment-only
+  SQL with `Error::Empty` (`execute_batch` is unchanged).
+  `Connection::column_metadata` and `Statement::column_metadata` return
+  `Option<CString>` instead of `Option<&CStr>` (`column_metadata` feature),
+  `Filters::in_values` is a `FallibleStreamingIterator<Item = RawValue>`
+  (`vtab` feature), and `ChangesetIter::start_strm` takes `& &mut dyn Read`
+  (`session` feature).
+- **fixed**: three use-after-frees reachable from safe code (`column_metadata`,
+  `vtab`, `session`) and a panic when parsing a `time::OffsetDateTime` from
+  fewer than 8 characters, all inherited from rusqlite `0.42.0`.
+
 # 0.9.0 (11 Nov 2026)
 - **updated**: [rusqlite] version to `0.42.0` (bundled SQLite `3.54.1`).
 - **added**: `wal` and `codec` feature flags (`codec` requires `sqlcipher` or
